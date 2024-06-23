@@ -1,6 +1,7 @@
 import {Particle} from './particle.js'
 import {throttle, getParentSize} from './utils.js'
 import {Vector2} from './vector2.js'
+import {drawRectangle, drawEllipse} from './draw.js'
 
 interface EffectProps {
   id: string
@@ -49,7 +50,7 @@ class Effect {
   #handlePointerClick(event: MouseEvent) {
     const offset = this.scale.div(2)
     const position = this.snapToGrid(this.#getMousePosition(event)).add(offset)
-    this.#addParticle(new Particle({position, size: this.scale, color: '#ff0000'}))
+    this.#addParticle(new Particle({position, size: this.scale}))
   }
 
   #initEventsListener() {
@@ -66,7 +67,7 @@ class Effect {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
     for (const particle of this.particles) {
-      particle.draw(this.ctx)
+      particle.draw(this.ctx, drawEllipse)
     }
 
     if (this.debug) this.#drawDebug()

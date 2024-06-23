@@ -1,41 +1,43 @@
-import type {Effect} from './effect.js'
 import {Vector2} from './vector2.js'
+import type {DrawOptions} from './draw.js'
 
-interface ParticleOptions {
-  effect?: Effect
-  position?: Vector2
-  size?: Vector2
-  color?: string
+interface ParticleInterface {
+  position: Vector2
+  size: Vector2
+  strokeColor?: string
+  strokeWidth?: number
+  fillColor?: string
 }
 
 class Particle {
   private position: Vector2
   private size: Vector2
-  private color: string
+  private strokeColor: string
+  private strokeWidth: number
+  private fillColor: string
 
   constructor({
-    position = new Vector2(0, 0),
-    size = new Vector2(10, 10),
-    color = 'red',
-  }: ParticleOptions) {
+    position,
+    size,
+    strokeColor = 'red',
+    strokeWidth = 1,
+    fillColor = 'transparent',
+  }: ParticleInterface) {
     this.position = position
     this.size = size
-    this.color = color
+    this.strokeColor = strokeColor
+    this.strokeWidth = strokeWidth
+    this.fillColor = fillColor
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
-    ctx.beginPath()
-    ctx.strokeStyle = this.color
-    ctx.ellipse(
-      this.position.x,
-      this.position.y,
-      this.size.x / 2,
-      this.size.y / 2,
-      0,
-      0,
-      2 * Math.PI
-    )
-    ctx.stroke()
+  draw(ctx: CanvasRenderingContext2D, drawFunction: (options: DrawOptions) => void) {
+    drawFunction({
+      ctx,
+      position: this.position,
+      size: this.size,
+      stroke: {color: this.strokeColor, width: this.strokeWidth},
+      fill: {color: this.fillColor},
+    })
   }
 }
 
