@@ -3,26 +3,38 @@ import {Vector2} from './vector2.js'
 
 interface ParticleOptions {
   effect?: Effect
-  position?: {x: number; y: number}
-  radius?: number
+  position?: Vector2
+  size?: Vector2
   color?: string
 }
 
 class Particle {
   private position: Vector2
-  private radius: number
+  private size: Vector2
   private color: string
 
-  constructor({position = new Vector2(0, 0), radius = 10, color = 'red'}: ParticleOptions) {
-    this.position = new Vector2(position.x, position.y)
-    this.radius = radius
+  constructor({
+    position = new Vector2(0, 0),
+    size = new Vector2(10, 10),
+    color = 'red',
+  }: ParticleOptions) {
+    this.position = position
+    this.size = size
     this.color = color
   }
 
   draw(ctx: CanvasRenderingContext2D) {
     ctx.beginPath()
     ctx.strokeStyle = this.color
-    ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2)
+    ctx.ellipse(
+      this.position.x,
+      this.position.y,
+      this.size.x / 2,
+      this.size.y / 2,
+      0,
+      0,
+      2 * Math.PI
+    )
     ctx.stroke()
   }
 }

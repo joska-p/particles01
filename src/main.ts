@@ -1,8 +1,6 @@
 import './style.css'
 import {Effect} from './components/effect'
 
-const effect = new Effect({id: 'canvas', scale: {x: 30, y: 30}, debug: true})
+const effect = new Effect({id: 'canvas', scale: {x: 20, y: 20}, debug: false})
 
 effect.init()
-
-console.log(effect)

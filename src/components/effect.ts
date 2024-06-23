@@ -49,7 +49,7 @@ class Effect {
   #handlePointerClick(event: MouseEvent) {
     const offset = this.scale.div(2)
     const position = this.snapToGrid(this.#getMousePosition(event)).add(offset)
-    this.#addParticle(new Particle({position, color: '#ff0000'}))
+    this.#addParticle(new Particle({position, size: this.scale, color: '#ff0000'}))
   }
 
   #initEventsListener() {
