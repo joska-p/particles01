@@ -1,17 +1,19 @@
-import { Vector2 } from "./vector2.js"
+import type {Effect} from './effect.js'
+import {Vector2} from './vector2.js'
 
 interface ParticleOptions {
-  position?: { x: number; y: number }
+  effect?: Effect
+  position?: {x: number; y: number}
   radius?: number
   color?: string
 }
 
 class Particle {
-  position: Vector2
-  radius: number
-  color: string
+  private position: Vector2
+  private radius: number
+  private color: string
 
-  constructor({ position = new Vector2(0, 0), radius = 10, color = "red" }: ParticleOptions) {
+  constructor({position = new Vector2(0, 0), radius = 10, color = 'red'}: ParticleOptions) {
     this.position = new Vector2(position.x, position.y)
     this.radius = radius
     this.color = color
@@ -25,4 +27,4 @@ class Particle {
   }
 }
 
-export { Particle }
+export {Particle}

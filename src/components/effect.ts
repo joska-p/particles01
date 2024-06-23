@@ -4,57 +4,75 @@ import {Vector2} from './vector2.js'
 
 interface EffectProps {
   id: string
+  scale?: {x: number; y: number}
   debug?: boolean
 }
 
 class Effect {
-  canvas: HTMLCanvasElement
-  ctx: CanvasRenderingContext2D
-  particles: Array<Particle>
-  debug: boolean
-  scale: Vector2
+  private canvas: HTMLCanvasElement
+  private ctx: CanvasRenderingContext2D
+  private particles: Array<Particle>
+  private debug: boolean
+  public scale: Vector2
 
-  constructor({id, debug}: EffectProps) {
+  constructor({id, scale, debug}: EffectProps) {
     this.canvas = document.getElementById(id) as HTMLCanvasElement
     this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D
     this.particles = []
-
     this.debug = debug ?? false
-    this.scale = new Vector2(50, 50)
+    this.scale = scale ? new Vector2(scale.x, scale.y) : new Vector2(50, 50)
   }
 
-  #resizeCanvas() {
-    const {x, y} = getParentSize(this.canvas)
+  snapToGrid(position: Vector2) {
+    return new Vector2(
+      Math.floor(position.x / this.scale.x) * this.scale.x,
+      Math.floor(position.y / this.scale.y) * this.scale.y
+    )
+  }
 
+  #handleResizeCanvas() {
     // the canvas need to be resize to the closest multiple of the scale that fits the parent
-    this.canvas.width = Math.ceil(x / this.scale.x) * this.scale.x
-    this.canvas.height = Math.ceil(y / this.scale.y) * this.scale.y
+    const {x, y} = this.snapToGrid(getParentSize(this.canvas))
+    this.canvas.width = x
+    this.canvas.height = y
 
-    this.update()
+    this.#update()
+  }
+
+  #getMousePosition(event: MouseEvent) {
+    const x = event.clientX - this.canvas.offsetLeft
+    const y = event.clientY - this.canvas.offsetTop
+
+    return new Vector2(x, y)
   }
 
   #handlePointerClick(event: MouseEvent) {
-    const pixelX = event.clientX - this.canvas.offsetLeft
-    const pixelY = event.clientY - this.canvas.offsetTop
-    this.particles.push(new Particle({position: new Vector2(pixelX, pixelY), color: '#ff0000'}))
-    console.log(this.particles)
-    this.update()
+    const offset = this.scale.div(2)
+    const position = this.snapToGrid(this.#getMousePosition(event)).add(offset)
+    this.#addParticle(new Particle({position, color: '#ff0000'}))
   }
 
   #initEventsListener() {
-    window.addEventListener('resize', throttle(this.#resizeCanvas.bind(this), 100))
+    window.addEventListener('resize', throttle(this.#handleResizeCanvas.bind(this), 100))
     this.canvas.addEventListener('click', throttle(this.#handlePointerClick.bind(this), 100))
   }
 
-  draw() {
+  #addParticle(particle: Particle) {
+    this.particles.push(particle)
+    this.#update()
+  }
+
+  #draw() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
     for (const particle of this.particles) {
       particle.draw(this.ctx)
     }
 
-    if (this.debug) this.drawDebug()
+    if (this.debug) this.#drawDebug()
   }
 
-  drawDebug() {
+  #drawDebug() {
     this.ctx.save()
 
     this.ctx.beginPath()
@@ -74,14 +92,14 @@ class Effect {
     this.ctx.restore()
   }
 
-  update() {
-    this.draw()
+  #update() {
+    this.#draw()
   }
 
   init() {
-    this.#resizeCanvas()
+    this.#handleResizeCanvas()
     this.#initEventsListener()
-    this.update()
+    this.#update()
   }
 }
 
