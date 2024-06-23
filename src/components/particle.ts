@@ -10,11 +10,11 @@ interface ParticleInterface {
 }
 
 class Particle {
-  private position: Vector2
-  private size: Vector2
-  private strokeColor: string
-  private strokeWidth: number
-  private fillColor: string
+  position: Vector2
+  size: Vector2
+  strokeColor: string
+  strokeWidth: number
+  fillColor: string
 
   constructor({
     position,
