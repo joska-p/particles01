@@ -1,13 +1,5 @@
-import {Vector2} from './vector2.js'
-import type {DrawOptions} from './draw.js'
-
-interface ParticleInterface {
-  position: Vector2
-  size: Vector2
-  strokeColor?: string
-  strokeWidth?: number
-  fillColor?: string
-}
+import { Vector2 } from './vector2.js'
+import type { DrawFunction } from './draw.js'
 
 class Particle {
   position: Vector2
@@ -16,13 +8,13 @@ class Particle {
   strokeWidth: number
   fillColor: string
 
-  constructor({
-    position,
-    size,
+  constructor ({
+    position = new Vector2(0, 0),
+    size = new Vector2(1, 1),
     strokeColor = 'red',
     strokeWidth = 1,
-    fillColor = 'transparent',
-  }: ParticleInterface) {
+    fillColor = 'transparent'
+  }) {
     this.position = position
     this.size = size
     this.strokeColor = strokeColor
@@ -30,15 +22,16 @@ class Particle {
     this.fillColor = fillColor
   }
 
-  draw(ctx: CanvasRenderingContext2D, drawFunction: (options: DrawOptions) => void) {
+  draw (ctx: CanvasRenderingContext2D, drawFunction: DrawFunction): void {
+    const { position, size, strokeColor, strokeWidth, fillColor } = this
     drawFunction({
       ctx,
-      position: this.position,
-      size: this.size,
-      stroke: {color: this.strokeColor, width: this.strokeWidth},
-      fill: {color: this.fillColor},
+      position,
+      size,
+      stroke: { color: strokeColor, width: strokeWidth },
+      fill: { color: fillColor }
     })
   }
 }
 
-export {Particle}
+export { Particle }

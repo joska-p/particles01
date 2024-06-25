@@ -1,9 +1,9 @@
-import { Vector2 } from "./vector2.js"
+import { Vector2 } from './vector2.js'
 
-const throttle = (fn: Function, delay: number) => {
+const throttle = (fn: Function, delay: number): Function => {
   let timer: number | null
   return (...args: any[]) => {
-    if (!timer) {
+    if (timer !== null) {
       timer = setTimeout(() => {
         fn(...args)
         timer = null
@@ -12,8 +12,8 @@ const throttle = (fn: Function, delay: number) => {
   }
 }
 
-const getParentSize = (element: HTMLElement) => {
-  if (!element.parentElement) return new Vector2(0, 0)
+const getParentSize = (element: HTMLElement): Vector2 => {
+  if (element.parentElement == null) return new Vector2(0, 0)
 
   const clientWidth = element.parentElement.clientWidth
   const clientHeight = element.parentElement.clientHeight

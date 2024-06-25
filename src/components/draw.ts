@@ -1,21 +1,21 @@
-import {Vector2} from './vector2.js'
+import { Vector2 } from './vector2.js'
 
-export type DrawOptions = {
+interface DrawOptions {
   ctx: CanvasRenderingContext2D
   position: Vector2
   size?: Vector2
-  stroke?: {color: string; width: number}
-  fill?: {color: string}
+  stroke?: { color: string, width: number }
+  fill?: { color: string }
 }
 
-type DrawFunction = (options: DrawOptions) => void
+export type DrawFunction = (options: DrawOptions) => void
 
 const drawRectangle: DrawFunction = ({
   ctx,
   position,
   size = new Vector2(1, 1),
-  stroke = {color: 'red', width: 1},
-  fill = {color: 'transparent'},
+  stroke = { color: 'red', width: 1 },
+  fill = { color: 'transparent' }
 }) => {
   ctx.strokeStyle = stroke.color
   ctx.lineWidth = stroke.width
@@ -28,8 +28,8 @@ const drawEllipse: DrawFunction = ({
   ctx,
   position,
   size = new Vector2(1, 1),
-  stroke = {color: 'red', width: 1},
-  fill = {color: 'transparent'},
+  stroke = { color: 'red', width: 1 },
+  fill = { color: 'transparent' }
 }) => {
   ctx.strokeStyle = stroke.color
   ctx.lineWidth = stroke.width
@@ -40,4 +40,4 @@ const drawEllipse: DrawFunction = ({
   ctx.stroke()
 }
 
-export {drawRectangle, drawEllipse}
+export { drawRectangle, drawEllipse }
