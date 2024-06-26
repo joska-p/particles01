@@ -1,107 +1,136 @@
-import { Particle } from './particle.js'
-import { throttle, getParentSize } from './utils.js'
-import { Vector2 } from './vector2.js'
-import { drawEllipse } from './draw.js'
+import { Particle } from "./particle.js"
+import { getParentSize } from "./utils.js"
+import { Vector2 } from "./vector2.js"
+import { drawEllipse } from "./draw.js"
 
 class Effect {
   private readonly canvas: HTMLCanvasElement
   private readonly ctx: CanvasRenderingContext2D
-  private readonly particles: Particle[]
-  private readonly debug: boolean
-  public scale: Vector2
-  private isScaled: boolean
+  private particles: Particle[]
+  private debug: boolean
+  public zoom: Vector2
 
-  constructor ({ id = '', scale = new Vector2(50, 50), debug = false }) {
+  constructor({ id = "", scale: zoom = { x: 20, y: 20 } }) {
+    if (id === "") throw new Error("id is required")
     this.canvas = document.getElementById(id) as HTMLCanvasElement
-    this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D
+    this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D
     this.particles = []
-    this.debug = debug
-    this.scale = scale
+    this.debug = false
+    this.zoom = new Vector2(zoom.x, zoom.y)
 
-    this.isScaled = false
+    this.#resizeCanvas()
+    this.#initEventsListener()
   }
 
-  #getSnapPoint (position: Vector2): Vector2 {
+  #getSnapPoint(position: Vector2): Vector2 {
     return new Vector2(
-      Math.floor(position.x / this.scale.x) * this.scale.x,
-      Math.floor(position.y / this.scale.y) * this.scale.y
-    )
+      Math.floor(position.x / this.zoom.x) * this.zoom.x,
+      Math.floor(position.y / this.zoom.y) * this.zoom.y
+    ).add(this.zoom.div(2))
   }
 
-  #resizeCanvas (): void {
+  #resizeCanvas(): void {
     // the canvas need to be resize to the closest multiple of the scale that fits the parent
     const { x, y } = this.#getSnapPoint(getParentSize(this.canvas))
     this.canvas.width = x
     this.canvas.height = y
-
-    this.#update()
   }
 
-  #getMousePosition (event: MouseEvent): Vector2 {
+  #getMousePosition(event: MouseEvent): Vector2 {
     const x = event.clientX - this.canvas.offsetLeft
     const y = event.clientY - this.canvas.offsetTop
 
-    return new Vector2(x, y)
+    return this.#getSnapPoint(new Vector2(x, y))
   }
 
-  #handlePointerClick (event: MouseEvent): void {
-    const offset = this.scale.div(2)
-    const position = this.#getSnapPoint(this.#getMousePosition(event)).add(offset)
-    this.#addParticle(new Particle({ position, size: this.scale }))
+  #handleMouseOver(event: MouseEvent): void {
+    const pointerPosition = this.#getMousePosition(event)
+    drawEllipse({ ctx: this.ctx, position: pointerPosition, size: this.zoom })
   }
 
-  #handleChangeScale (event: Event): void {
+  #handleMouseMove(event: MouseEvent): void {
+    this.#handleMouseOver(event)
+  }
+
+  #handleMouseLeave(): void {
+    // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+  }
+
+  #handlePointerClick(event: MouseEvent): void {
+    const position = this.#getMousePosition(event)
+    this.#addParticle(new Particle({ position, size: this.zoom }))
+  }
+
+  #handleChangeScale(event: Event): void {
     const value = (event.target as HTMLInputElement).value
-    this.scale = new Vector2(Number(value), Number(value))
-    this.isScaled = true
-    this.#resizeCanvas()
-    this.#update()
+    this.zoom = new Vector2(Number(value), Number(value))
   }
 
-  #initEventsListener (): void {
-    // change scale
-    const initialScaleInput = document.getElementById('initial-scale') as HTMLInputElement
-    initialScaleInput.addEventListener('change', this.#handleChangeScale.bind(this))
+  #handleControls(): void {
+    const controls = document.getElementById("controls") as HTMLFormElement
+    if (controls === null) throw new Error("controls is required")
 
+    const uiZoom = controls.querySelector("#zoom") as HTMLInputElement
+    if (uiZoom === null) throw new Error("uiZoom is required")
+    const uiDebug = controls.querySelector("#debug") as HTMLInputElement
+    if (uiDebug === null) throw new Error("uiDebug is required")
+    const uiClear = controls.querySelector("#clear") as HTMLInputElement
+    if (uiClear === null) throw new Error("uiClear is required")
+
+    uiZoom.addEventListener("change", this.#handleChangeScale.bind(this))
+    uiDebug.addEventListener("change", () => {
+      this.debug = !this.debug
+    })
+    uiClear.addEventListener("click", () => {
+      this.particles = []
+    })
+  }
+
+  #initEventsListener(): void {
+    // controls
+    this.#handleControls()
     // resize canvas
-    window.addEventListener('resize', throttle(this.#resizeCanvas.bind(this), 100) as EventListener)
+    window.addEventListener("resize", this.#resizeCanvas.bind(this))
 
     // click on canvas
-    this.canvas.addEventListener('click', throttle(this.#handlePointerClick.bind(this), 100) as EventListener)
+    this.canvas.addEventListener("click", this.#handlePointerClick.bind(this))
+    // mouseover on canvas
+    this.canvas.addEventListener("mouseover", this.#handleMouseOver.bind(this))
+    // mousemove on canvas
+    this.canvas.addEventListener("mousemove", this.#handleMouseMove.bind(this))
+    // mouseleave on canvas
+    this.canvas.addEventListener("mouseleave", this.#handleMouseLeave.bind(this))
   }
 
-  #addParticle (particle: Particle): void {
+  #addParticle(particle: Particle): void {
     this.particles.push(particle)
     particle.draw(this.ctx, drawEllipse)
   }
 
-  #draw (): void {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+  #draw(): void {
+    this.particles.forEach(particle => {
+      particle.position = this.#getSnapPoint(particle.position)
+      particle.size = this.zoom
 
-    for (const particle of this.particles) {
-      if (this.isScaled) {
-        const offset = this.scale.div(2)
-        particle.position = this.#getSnapPoint(particle.position).add(offset)
-        particle.size = this.scale
-      }
+      // draw the point
       particle.draw(this.ctx, drawEllipse)
-    }
+    })
 
     if (this.debug) this.#drawDebug()
   }
 
-  #drawDebug (): void {
+  #drawDebug(): void {
     this.ctx.save()
 
     this.ctx.beginPath()
-    this.ctx.strokeStyle = '#ff0000'
+    this.ctx.strokeStyle = "#ff0000"
     this.ctx.globalAlpha = 0.2
 
-    for (let x = 0; x < this.canvas.width; x += this.scale.x) {
+    for (let x = 0; x < this.canvas.width; x += this.zoom.x) {
       this.ctx.moveTo(x, 0)
       this.ctx.lineTo(x, this.canvas.height)
     }
-    for (let y = 0; y < this.canvas.height; y += this.scale.y) {
+    for (let y = 0; y < this.canvas.height; y += this.zoom.y) {
       this.ctx.moveTo(0, y)
       this.ctx.lineTo(this.canvas.width, y)
     }
@@ -110,14 +139,9 @@ class Effect {
     this.ctx.restore()
   }
 
-  #update (): void {
+  public update(): void {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     this.#draw()
-  }
-
-  init (): void {
-    this.#resizeCanvas()
-    this.#initEventsListener()
-    this.#update()
   }
 }
 

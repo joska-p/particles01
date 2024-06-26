@@ -11,22 +11,24 @@
       <div class="flex h-3/4 w-3/4 flex-col items-center justify-center bg-slate-950 p-5">
         <canvas id="canvas"></canvas>
       </div>
-      <div
-        id="controls"
-        class="flex h-1/4 w-3/4 flex-col items-center justify-center bg-slate-950 p-5"
-      >
-        <!-- TODO control bar for the initial-scale -->
-        <label for="initial-scale">Initial Scale</label>
-        <input
-          type="range"
-          min="1"
-          max="50"
-          step="1"
-          value="25"
-          class="slider"
-          id="initial-scale"
-        />
-      </div>
+
+      <form id="controls" class="flex h-1/4 w-3/4 flex-row items-center justify-center gap-5 bg-slate-950 p-5">
+        <div class="form-group flex flex-col">
+          <label for="zoom" class="text-white">Zoom</label>
+          <input type="range" min="1" max="50" step="1" value="25" class="slider" id="zoom" />
+        </div>
+
+        <div class="form-group flex flex-col">
+          <label for="debug" class="text-white">Debug</label>
+          <input type="checkbox" id="debug" />
+        </div>
+
+        <div class="form-group flex flex-col">
+          <button type="button" id="clear" class="btn radius-3xl rounded bg-red-500 p-2 text-white hover:bg-red-700">
+            Clear
+          </button>
+        </div>
+      </form>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

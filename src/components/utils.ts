@@ -1,16 +1,4 @@
-import { Vector2 } from './vector2.js'
-
-const throttle = (fn: Function, delay: number): Function => {
-  let timer: number | null
-  return (...args: any[]) => {
-    if (timer !== null) {
-      timer = setTimeout(() => {
-        fn(...args)
-        timer = null
-      }, delay)
-    }
-  }
-}
+import { Vector2 } from "./vector2.js"
 
 const getParentSize = (element: HTMLElement): Vector2 => {
   if (element.parentElement == null) return new Vector2(0, 0)
@@ -24,4 +12,4 @@ const getParentSize = (element: HTMLElement): Vector2 => {
   return new Vector2(clientWidth - inlinePadding, clientHeight - boxPadding)
 }
 
-export { throttle, getParentSize }
+export { getParentSize }
