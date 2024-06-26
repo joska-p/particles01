@@ -1,5 +1,4 @@
-import { Vector2 } from './vector2.js'
-import type { DrawFunction } from './draw.js'
+import { Vector2 } from "./vector2.js"
 
 class Particle {
   position: Vector2
@@ -8,12 +7,12 @@ class Particle {
   strokeWidth: number
   fillColor: string
 
-  constructor ({
+  constructor({
     position = new Vector2(0, 0),
     size = new Vector2(1, 1),
-    strokeColor = 'red',
+    strokeColor = "transparent",
     strokeWidth = 1,
-    fillColor = 'transparent'
+    fillColor = "teal",
   }) {
     this.position = position
     this.size = size
@@ -22,15 +21,22 @@ class Particle {
     this.fillColor = fillColor
   }
 
-  draw (ctx: CanvasRenderingContext2D, drawFunction: DrawFunction): void {
-    const { position, size, strokeColor, strokeWidth, fillColor } = this
-    drawFunction({
-      ctx,
-      position,
-      size,
-      stroke: { color: strokeColor, width: strokeWidth },
-      fill: { color: fillColor }
-    })
+  drawRectangle = (ctx: CanvasRenderingContext2D): void => {
+    ctx.strokeStyle = this.strokeColor
+    ctx.lineWidth = this.strokeWidth
+    ctx.fillStyle = this.fillColor
+    ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y)
+    ctx.strokeRect(this.position.x, this.position.y, this.size.x, this.size.y)
+  }
+
+  drawEllipse = (ctx: CanvasRenderingContext2D): void => {
+    ctx.strokeStyle = this.strokeColor
+    ctx.lineWidth = this.strokeWidth
+    ctx.fillStyle = this.fillColor
+    ctx.beginPath()
+    ctx.ellipse(this.position.x, this.position.y, this.size.x / 2, this.size.y / 2, 0, 0, 2 * Math.PI)
+    ctx.fill()
+    ctx.stroke()
   }
 }
 

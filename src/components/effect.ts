@@ -1,7 +1,6 @@
 import { Particle } from "./particle.js"
 import { getParentSize } from "./utils.js"
 import { Vector2 } from "./vector2.js"
-import { drawEllipse } from "./draw.js"
 
 class Effect {
   private readonly canvas: HTMLCanvasElement
@@ -9,14 +8,18 @@ class Effect {
   private particles: Particle[]
   private debug: boolean
   public zoom: Vector2
+  private pointer: Particle | null
 
   constructor({ id = "", scale: zoom = { x: 20, y: 20 } }) {
     if (id === "") throw new Error("id is required")
     this.canvas = document.getElementById(id) as HTMLCanvasElement
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D
-    this.particles = []
     this.debug = false
     this.zoom = new Vector2(zoom.x, zoom.y)
+
+    this.pointer = null
+
+    this.particles = []
 
     this.#resizeCanvas()
     this.#initEventsListener()
@@ -44,21 +47,31 @@ class Effect {
   }
 
   #handleMouseOver(event: MouseEvent): void {
-    const pointerPosition = this.#getMousePosition(event)
-    drawEllipse({ ctx: this.ctx, position: pointerPosition, size: this.zoom })
+    const position = this.#getMousePosition(event)
+
+    this.pointer = new Particle({
+      position,
+      size: this.zoom.div(2),
+      strokeColor: "transparent",
+      strokeWidth: 1,
+      fillColor: "turquoise",
+    })
+  }
+
+  #handleMouseOut(): void {
+    this.pointer = null
   }
 
   #handleMouseMove(event: MouseEvent): void {
-    this.#handleMouseOver(event)
-  }
-
-  #handleMouseLeave(): void {
-    // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-  }
-
-  #handlePointerClick(event: MouseEvent): void {
+    if (this.pointer === null) return
     const position = this.#getMousePosition(event)
-    this.#addParticle(new Particle({ position, size: this.zoom }))
+    this.pointer.position = position
+  }
+
+  #handleMouseClick(): void {
+    if (this.pointer !== null) {
+      this.#addParticle(new Particle({ position: this.pointer.position, size: this.zoom }))
+    }
   }
 
   #handleChangeScale(event: Event): void {
@@ -78,8 +91,9 @@ class Effect {
     if (uiClear === null) throw new Error("uiClear is required")
 
     uiZoom.addEventListener("change", this.#handleChangeScale.bind(this))
-    uiDebug.addEventListener("change", () => {
-      this.debug = !this.debug
+    uiDebug.addEventListener("change", (event: Event) => {
+      const checked = (event.target as HTMLInputElement).checked
+      this.debug = checked ? true : false
     })
     uiClear.addEventListener("click", () => {
       this.particles = []
@@ -93,18 +107,18 @@ class Effect {
     window.addEventListener("resize", this.#resizeCanvas.bind(this))
 
     // click on canvas
-    this.canvas.addEventListener("click", this.#handlePointerClick.bind(this))
+    this.canvas.addEventListener("click", this.#handleMouseClick.bind(this))
     // mouseover on canvas
     this.canvas.addEventListener("mouseover", this.#handleMouseOver.bind(this))
+    // mouseout on canvas
+    this.canvas.addEventListener("mouseout", this.#handleMouseOut.bind(this))
     // mousemove on canvas
     this.canvas.addEventListener("mousemove", this.#handleMouseMove.bind(this))
-    // mouseleave on canvas
-    this.canvas.addEventListener("mouseleave", this.#handleMouseLeave.bind(this))
   }
 
   #addParticle(particle: Particle): void {
     this.particles.push(particle)
-    particle.draw(this.ctx, drawEllipse)
+    particle.drawEllipse(this.ctx)
   }
 
   #draw(): void {
@@ -113,7 +127,7 @@ class Effect {
       particle.size = this.zoom
 
       // draw the point
-      particle.draw(this.ctx, drawEllipse)
+      particle.drawEllipse(this.ctx)
     })
 
     if (this.debug) this.#drawDebug()
@@ -142,6 +156,7 @@ class Effect {
   public update(): void {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     this.#draw()
+    if (this.pointer !== null) this.pointer.drawEllipse(this.ctx)
   }
 }
 
