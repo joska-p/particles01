@@ -1,9 +1,9 @@
-import { Vector2 } from "./vector2.js"
+import { Point } from "./point.js"
 
 interface DrawOptions {
   ctx: CanvasRenderingContext2D
-  position: Vector2
-  size?: Vector2
+  position: Point
+  size?: Point
   stroke?: { color: string; width: number }
   fill?: { color: string }
 }
@@ -13,7 +13,7 @@ export type DrawFunction = (options: DrawOptions) => void
 const drawRectangle: DrawFunction = ({
   ctx,
   position,
-  size = new Vector2(1, 1),
+  size = new Point(1, 1),
   stroke = { color: "red", width: 1 },
   fill = { color: "transparent" },
 }) => {
@@ -27,7 +27,7 @@ const drawRectangle: DrawFunction = ({
 const drawEllipse: DrawFunction = ({
   ctx,
   position,
-  size = new Vector2(1, 1),
+  size = new Point(1, 1),
   stroke = { color: "red", width: 1 },
   fill = { color: "transparent" },
 }) => {

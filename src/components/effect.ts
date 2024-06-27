@@ -1,13 +1,13 @@
 import { Particle } from "./particle.js"
 import { getParentSize } from "./utils.js"
-import { Vector2 } from "./vector2.js"
+import { Point } from "./point.js"
 
 class Effect {
   private readonly canvas: HTMLCanvasElement
   private readonly ctx: CanvasRenderingContext2D
   private particles: Particle[]
   private debug: boolean
-  public zoom: Vector2
+  public zoom: Point
   private pointer: Particle | null
 
   constructor({ id = "", scale: zoom = { x: 20, y: 20 } }) {
@@ -15,7 +15,7 @@ class Effect {
     this.canvas = document.getElementById(id) as HTMLCanvasElement
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D
     this.debug = false
-    this.zoom = new Vector2(zoom.x, zoom.y)
+    this.zoom = new Point(zoom.x, zoom.y)
 
     this.pointer = null
 
@@ -25,8 +25,8 @@ class Effect {
     this.#initEventsListener()
   }
 
-  #getSnapPoint(position: Vector2): Vector2 {
-    return new Vector2(
+  #getSnapPoint(position: Point): Point {
+    return new Point(
       Math.floor(position.x / this.zoom.x) * this.zoom.x,
       Math.floor(position.y / this.zoom.y) * this.zoom.y
     ).add(this.zoom.div(2))
@@ -39,11 +39,11 @@ class Effect {
     this.canvas.height = y
   }
 
-  #getMousePosition(event: MouseEvent): Vector2 {
+  #getMousePosition(event: MouseEvent): Point {
     const x = event.clientX - this.canvas.offsetLeft
     const y = event.clientY - this.canvas.offsetTop
 
-    return this.#getSnapPoint(new Vector2(x, y))
+    return this.#getSnapPoint(new Point(x, y))
   }
 
   #handleMouseOver(event: MouseEvent): void {
@@ -70,13 +70,15 @@ class Effect {
 
   #handleMouseClick(): void {
     if (this.pointer !== null) {
-      this.#addParticle(new Particle({ position: this.pointer.position, size: this.zoom }))
+      this.#addParticle(
+        new Particle({ position: this.pointer.position, size: this.zoom })
+      )
     }
   }
 
   #handleChangeScale(event: Event): void {
     const value = (event.target as HTMLInputElement).value
-    this.zoom = new Vector2(Number(value), Number(value))
+    this.zoom = new Point(Number(value), Number(value))
   }
 
   #handleControls(): void {
@@ -138,7 +140,7 @@ class Effect {
 
     this.ctx.beginPath()
     this.ctx.strokeStyle = "#ff0000"
-    this.ctx.globalAlpha = 0.2
+    this.ctx.globalAlpha = 0.5
 
     for (let x = 0; x < this.canvas.width; x += this.zoom.x) {
       this.ctx.moveTo(x, 0)

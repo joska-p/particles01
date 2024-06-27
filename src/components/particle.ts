@@ -1,15 +1,15 @@
-import { Vector2 } from "./vector2.js"
+import { Point } from "./point.js"
 
 class Particle {
-  position: Vector2
-  size: Vector2
+  position: Point
+  size: Point
   strokeColor: string
   strokeWidth: number
   fillColor: string
 
   constructor({
-    position = new Vector2(0, 0),
-    size = new Vector2(1, 1),
+    position = new Point(0, 0),
+    size = new Point(1, 1),
     strokeColor = "transparent",
     strokeWidth = 1,
     fillColor = "teal",
@@ -34,7 +34,15 @@ class Particle {
     ctx.lineWidth = this.strokeWidth
     ctx.fillStyle = this.fillColor
     ctx.beginPath()
-    ctx.ellipse(this.position.x, this.position.y, this.size.x / 2, this.size.y / 2, 0, 0, 2 * Math.PI)
+    ctx.ellipse(
+      this.position.x,
+      this.position.y,
+      this.size.x / 2,
+      this.size.y / 2,
+      0,
+      0,
+      2 * Math.PI
+    )
     ctx.fill()
     ctx.stroke()
   }
