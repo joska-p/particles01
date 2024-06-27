@@ -3,12 +3,12 @@ import { getParentSize } from "./utils.js"
 import { Point } from "./point.js"
 
 class Effect {
-  private readonly canvas: HTMLCanvasElement
-  private readonly ctx: CanvasRenderingContext2D
-  private particles: Particle[]
-  private debug: boolean
+  public canvas: HTMLCanvasElement
+  public ctx: CanvasRenderingContext2D
+  public particles: Particle[]
+  public debug: boolean
   public zoom: Point
-  private pointer: Particle | null
+  public pointer: Particle | null
 
   constructor({ id = "", scale: zoom = { x: 20, y: 20 } }) {
     if (id === "") throw new Error("id is required")
@@ -59,9 +59,7 @@ class Effect {
 
   #handleMouseClick(): void {
     if (this.pointer === null) return
-    this.particles.push(
-      new Particle({ position: this.pointer.position, size: this.zoom })
-    )
+    this.particles.push(new Particle({ position: this.pointer.position, size: this.zoom }))
   }
 
   #handleZoom(event: Event): void {
@@ -100,10 +98,7 @@ class Effect {
 
     window.addEventListener("resize", this.#handleResize.bind(this))
     this.canvas.addEventListener("click", this.#handleMouseClick.bind(this))
-    this.canvas.addEventListener(
-      "mouseenter",
-      this.#handleMouseEnter.bind(this)
-    )
+    this.canvas.addEventListener("mouseenter", this.#handleMouseEnter.bind(this))
     this.canvas.addEventListener("mousemove", this.#handleMouseMove.bind(this))
     this.canvas.addEventListener("mouseout", this.#handleMouseOut.bind(this))
   }

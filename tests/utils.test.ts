@@ -43,6 +43,7 @@ describe("getParentSize when there is no parent", () => {
     const bodyWidth = document.body.clientWidth
     const bodyHeight = document.body.clientHeight
 
+    expect
     expect(size.x).toBe(bodyWidth)
     expect(size.y).toBe(bodyHeight)
   })

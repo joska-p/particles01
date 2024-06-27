@@ -1,19 +1,28 @@
 import { Point } from "./point.js"
 
-class Particle {
-  position: Point
-  size: Point
-  strokeColor: string
-  strokeWidth: number
-  fillColor: string
+interface ParticleOptions {
+  position?: Point
+  size?: Point
+  strokeColor?: string
+  strokeWidth?: number
+  fillColor?: string
+}
 
-  constructor({
-    position = new Point(0, 0),
-    size = new Point(1, 1),
-    strokeColor = "transparent",
-    strokeWidth = 1,
-    fillColor = "teal",
-  }) {
+class Particle {
+  public position: Point
+  public size: Point
+  public strokeColor: string
+  public strokeWidth: number
+  public fillColor: string
+
+  constructor(options: ParticleOptions = {}) {
+    const {
+      position = new Point(0, 0),
+      size = new Point(1, 1),
+      strokeColor = "transparent",
+      strokeWidth = 1,
+      fillColor = "teal",
+    } = options
     this.position = position
     this.size = size
     this.strokeColor = strokeColor
@@ -22,17 +31,17 @@ class Particle {
   }
 
   drawRectangle = (ctx: CanvasRenderingContext2D): void => {
+    ctx.fillStyle = this.fillColor
     ctx.strokeStyle = this.strokeColor
     ctx.lineWidth = this.strokeWidth
-    ctx.fillStyle = this.fillColor
     ctx.fillRect(this.position.x, this.position.y, this.size.x, this.size.y)
     ctx.strokeRect(this.position.x, this.position.y, this.size.x, this.size.y)
   }
 
   drawEllipse = (ctx: CanvasRenderingContext2D): void => {
+    ctx.fillStyle = this.fillColor
     ctx.strokeStyle = this.strokeColor
     ctx.lineWidth = this.strokeWidth
-    ctx.fillStyle = this.fillColor
     ctx.beginPath()
     ctx.ellipse(
       this.position.x,
