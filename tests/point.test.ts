@@ -84,4 +84,10 @@ describe("point", () => {
     expect(point1).toBe(true)
     expect(point).toBe(false)
   })
+
+  test("lerp a point", () => {
+    const point = new Point(1, 2).lerp(new Point(3, 4), 0.5)
+    expect(point.x).toBe(2)
+    expect(point.y).toBe(3)
+  })
 })

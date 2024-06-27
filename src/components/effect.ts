@@ -21,20 +21,13 @@ class Effect {
 
     this.particles = []
 
-    this.#resizeCanvas()
+    this.#handleResize()
     this.#initEventsListener()
   }
 
-  #getSnapPoint(position: Point): Point {
-    return new Point(
-      Math.floor(position.x / this.zoom.x) * this.zoom.x,
-      Math.floor(position.y / this.zoom.y) * this.zoom.y
-    ).add(this.zoom.div(2))
-  }
-
-  #resizeCanvas(): void {
+  #handleResize(): void {
     // the canvas need to be resize to the closest multiple of the scale that fits the parent
-    const { x, y } = this.#getSnapPoint(getParentSize(this.canvas))
+    const { x, y } = getParentSize(this.canvas)
     this.canvas.width = x
     this.canvas.height = y
   }
@@ -42,43 +35,43 @@ class Effect {
   #getMousePosition(event: MouseEvent): Point {
     const x = event.clientX - this.canvas.offsetLeft
     const y = event.clientY - this.canvas.offsetTop
-
-    return this.#getSnapPoint(new Point(x, y))
+    return new Point(x, y)
   }
 
-  #handleMouseOver(event: MouseEvent): void {
-    const position = this.#getMousePosition(event)
-
+  #handleMouseEnter(event: MouseEvent): void {
     this.pointer = new Particle({
-      position,
-      size: this.zoom.div(2),
+      position: this.#getMousePosition(event),
+      size: this.zoom,
       strokeColor: "transparent",
       strokeWidth: 1,
       fillColor: "turquoise",
     })
   }
 
+  #handleMouseMove(event: MouseEvent): void {
+    if (this.pointer === null) return
+    this.pointer.position = this.#getMousePosition(event)
+  }
+
   #handleMouseOut(): void {
     this.pointer = null
   }
 
-  #handleMouseMove(event: MouseEvent): void {
-    if (this.pointer === null) return
-    const position = this.#getMousePosition(event)
-    this.pointer.position = position
-  }
-
   #handleMouseClick(): void {
-    if (this.pointer !== null) {
-      this.#addParticle(
-        new Particle({ position: this.pointer.position, size: this.zoom })
-      )
-    }
+    if (this.pointer === null) return
+    this.particles.push(
+      new Particle({ position: this.pointer.position, size: this.zoom })
+    )
   }
 
-  #handleChangeScale(event: Event): void {
+  #handleZoom(event: Event): void {
     const value = (event.target as HTMLInputElement).value
     this.zoom = new Point(Number(value), Number(value))
+    this.particles.forEach(particle => {
+      particle.size = this.zoom
+    })
+
+    this.#handleResize()
   }
 
   #handleControls(): void {
@@ -92,7 +85,7 @@ class Effect {
     const uiClear = controls.querySelector("#clear") as HTMLInputElement
     if (uiClear === null) throw new Error("uiClear is required")
 
-    uiZoom.addEventListener("change", this.#handleChangeScale.bind(this))
+    uiZoom.addEventListener("change", this.#handleZoom.bind(this))
     uiDebug.addEventListener("change", (event: Event) => {
       const checked = (event.target as HTMLInputElement).checked
       this.debug = checked ? true : false
@@ -103,32 +96,20 @@ class Effect {
   }
 
   #initEventsListener(): void {
-    // controls
     this.#handleControls()
-    // resize canvas
-    window.addEventListener("resize", this.#resizeCanvas.bind(this))
 
-    // click on canvas
+    window.addEventListener("resize", this.#handleResize.bind(this))
     this.canvas.addEventListener("click", this.#handleMouseClick.bind(this))
-    // mouseover on canvas
-    this.canvas.addEventListener("mouseover", this.#handleMouseOver.bind(this))
-    // mouseout on canvas
-    this.canvas.addEventListener("mouseout", this.#handleMouseOut.bind(this))
-    // mousemove on canvas
+    this.canvas.addEventListener(
+      "mouseenter",
+      this.#handleMouseEnter.bind(this)
+    )
     this.canvas.addEventListener("mousemove", this.#handleMouseMove.bind(this))
-  }
-
-  #addParticle(particle: Particle): void {
-    this.particles.push(particle)
-    particle.drawEllipse(this.ctx)
+    this.canvas.addEventListener("mouseout", this.#handleMouseOut.bind(this))
   }
 
   #draw(): void {
     this.particles.forEach(particle => {
-      particle.position = this.#getSnapPoint(particle.position)
-      particle.size = this.zoom
-
-      // draw the point
       particle.drawEllipse(this.ctx)
     })
 

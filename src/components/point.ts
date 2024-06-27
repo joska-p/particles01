@@ -60,6 +60,13 @@ class Point {
       this.y <= point.y + bound
     )
   }
+
+  lerp(point: Point, t: number): Point {
+    return new Point(
+      this.x + (point.x - this.x) * t,
+      this.y + (point.y - this.y) * t
+    )
+  }
 }
 
 export { Point }
