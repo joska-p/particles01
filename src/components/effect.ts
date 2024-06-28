@@ -17,6 +17,9 @@ class Effect {
   public debug: boolean
   public zoom: Point
   public pointer: Particle | null
+  public uiZoom: HTMLInputElement
+  public uiDebug: HTMLInputElement
+  public uiClear: HTMLInputElement
 
   constructor({ canvas, zoom = { x: 20, y: 20 } }: EffectOptions) {
     if (!(canvas instanceof HTMLCanvasElement)) throw new Error("canvas is not a HTMLCanvasElement")
@@ -27,6 +30,21 @@ class Effect {
     this.zoom = new Point(zoom.x, zoom.y)
     this.pointer = null
     this.particles = []
+
+    // ui elements
+    this.uiZoom = document.getElementById("zoom") as HTMLInputElement
+    this.uiDebug = document.getElementById("debug") as HTMLInputElement
+    this.uiClear = document.getElementById("clear") as HTMLInputElement
+
+    // handle events
+    this.handleResize()
+    this.handleEventsListeners()
+  }
+
+  getMousePosition(event: MouseEvent): Point {
+    const x = event.clientX - this.canvas.offsetLeft
+    const y = event.clientY - this.canvas.offsetTop
+    return new Point(x, y)
   }
 
   handleResize(): void {
@@ -35,10 +53,14 @@ class Effect {
     this.canvas.height = y
   }
 
-  getMousePosition(event: MouseEvent): Point {
-    const x = event.clientX - this.canvas.offsetLeft
-    const y = event.clientY - this.canvas.offsetTop
-    return new Point(x, y)
+  handleZoom(event: Event): void {
+    const value = (event.target as HTMLInputElement).value
+    this.zoom = new Point(Number(value), Number(value))
+    this.particles.forEach(particle => {
+      particle.size = this.zoom
+    })
+
+    this.handleResize()
   }
 
   handleMouseEnter(event: MouseEvent): void {
@@ -65,56 +87,34 @@ class Effect {
     this.particles.push(new Particle({ position: this.pointer.position, size: this.zoom }))
   }
 
-  handleZoom(event: Event): void {
-    const value = (event.target as HTMLInputElement).value
-    this.zoom = new Point(Number(value), Number(value))
-    this.particles.forEach(particle => {
-      particle.size = this.zoom
-    })
-
-    this.handleResize()
-  }
-
-  handleControls(): void {
-    const controls = document.getElementById("controls") as HTMLFormElement
-    if (controls === null) throw new Error("controls is required")
-
-    const uiZoom = controls.querySelector("#zoom") as HTMLInputElement
-    if (uiZoom === null) throw new Error("uiZoom is required")
-    const uiDebug = controls.querySelector("#debug") as HTMLInputElement
-    if (uiDebug === null) throw new Error("uiDebug is required")
-    const uiClear = controls.querySelector("#clear") as HTMLInputElement
-    if (uiClear === null) throw new Error("uiClear is required")
-
-    uiZoom.addEventListener("change", this.handleZoom.bind(this))
-    uiDebug.addEventListener("change", (event: Event) => {
+  handleEventsListeners(): void {
+    // ui controls
+    this.uiZoom.addEventListener("change", this.handleZoom.bind(this))
+    this.uiDebug.addEventListener("change", (event: Event) => {
       const checked = (event.target as HTMLInputElement).checked
       this.debug = checked ? true : false
     })
-    uiClear.addEventListener("click", () => {
+    this.uiClear.addEventListener("click", () => {
       this.particles = []
     })
-  }
 
-  handleEventsListeners(): void {
-    this.handleControls()
-
+    // window
     window.addEventListener("resize", this.handleResize.bind(this))
+
+    // mouse
     this.canvas.addEventListener("click", this.handleMouseClick.bind(this))
     this.canvas.addEventListener("mouseenter", this.handleMouseEnter.bind(this))
     this.canvas.addEventListener("mousemove", this.handleMouseMove.bind(this))
     this.canvas.addEventListener("mouseout", this.handleMouseOut.bind(this))
   }
 
-  draw(): void {
-    this.particles.forEach(particle => {
-      particle.drawEllipse(this.ctx)
-    })
-
-    if (this.debug) this.drawDebug()
+  drawPointer(): void {
+    if (this.pointer === null) return
+    this.pointer.drawEllipse(this.ctx)
   }
 
   drawDebug(): void {
+    if (this.debug === false) return
     this.ctx.save()
 
     this.ctx.beginPath()
@@ -134,15 +134,18 @@ class Effect {
     this.ctx.restore()
   }
 
+  draw(): void {
+    this.particles.forEach(particle => {
+      particle.drawEllipse(this.ctx)
+    })
+
+    this.drawPointer()
+    this.drawDebug()
+  }
+
   update(): void {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     this.draw()
-    if (this.pointer !== null) this.pointer.drawEllipse(this.ctx)
-  }
-
-  init(): void {
-    this.handleResize()
-    this.handleEventsListeners()
   }
 }
 

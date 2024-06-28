@@ -4,7 +4,18 @@ import { beforeAll, describe, expect, test, vi } from "vitest"
 
 describe("effect", () => {
   beforeAll(() => {
-    document.body.innerHTML = `<div id="parent"><canvas id="canvas">why it doesn't work?</canvas></div>`
+    document.body.innerHTML = `
+    <div id="parent" style="width: 100px; height: 100px;">
+    <canvas id="canvas">why it doesn't work?</canvas>
+    <form id="controls">
+    <input type="range" min="1" max="50" step="1" value="25" id="zoom">
+    <input type="checkbox" id="debug" />
+    <button type="button" id="clear"">
+            Clear
+          </button>
+    </form>
+    </div>
+    `
   })
 
   describe("When i create a new effect with a wrong id", () => {
@@ -17,25 +28,29 @@ describe("effect", () => {
   })
 
   describe("When i create a new effect with a valid id", () => {
-    test("it should return a new instance of Effect with default values", () => {
+    test("it should return a new instance of Effect", () => {
       const canvas = document.getElementById("canvas") as HTMLCanvasElement
-      expect(() => {
-        new Effect({ canvas })
-      }).not.toThrow()
-
       const effect = new Effect({ canvas })
       expect(effect).toBeInstanceOf(Effect)
+    })
+
+    test("it should return a new instance of Effect with default values", () => {
+      const canvas = document.getElementById("canvas") as HTMLCanvasElement
+      const effect = new Effect({ canvas })
 
       expect(effect.canvas).toBeInstanceOf(HTMLCanvasElement)
       expect(effect.ctx).toBeInstanceOf(CanvasRenderingContext2D)
-      expect(effect.debug).toBe(false)
-      expect(effect.zoom).toBeInstanceOf(Point)
-      expect(effect.pointer).toBe(null)
-      expect(effect.particles).toBeInstanceOf(Array)
+      expect(effect.particles).toEqual([])
+      expect(effect.debug).toEqual(false)
+      expect(effect.zoom).toEqual(new Point(20, 20))
+      expect(effect.pointer).toBeNull()
+    })
 
-      expect(effect.particles.length).toBe(0)
-      expect(effect.zoom.x).toBe(20)
-      expect(effect.zoom.y).toBe(20)
+    test("it should resize the canvas to fit the parent element when instantiated", () => {
+      const canvas = document.getElementById("canvas") as HTMLCanvasElement
+      const effect = new Effect({ canvas })
+      expect(effect.canvas.width).toBe(100)
+      expect(effect.canvas.height).toBe(100)
     })
   })
 })

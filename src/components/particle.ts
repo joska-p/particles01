@@ -30,7 +30,7 @@ class Particle {
     this.fillColor = fillColor
   }
 
-  drawRectangle = (ctx: CanvasRenderingContext2D): void => {
+  public drawRectangle = (ctx: CanvasRenderingContext2D): void => {
     ctx.fillStyle = this.fillColor
     ctx.strokeStyle = this.strokeColor
     ctx.lineWidth = this.strokeWidth
@@ -38,7 +38,7 @@ class Particle {
     ctx.strokeRect(this.position.x, this.position.y, this.size.x, this.size.y)
   }
 
-  drawEllipse = (ctx: CanvasRenderingContext2D): void => {
+  public drawEllipse = (ctx: CanvasRenderingContext2D): void => {
     ctx.fillStyle = this.fillColor
     ctx.strokeStyle = this.strokeColor
     ctx.lineWidth = this.strokeWidth
