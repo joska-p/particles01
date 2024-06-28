@@ -1,7 +1,9 @@
 import "./style.css"
 import { Effect } from "./components/effect"
 
-const effect = new Effect({ id: "canvas", scale: { x: 20, y: 20 } })
+const canvas = document.getElementById("canvas") as HTMLCanvasElement
+const effect = new Effect({ canvas, zoom: { x: 20, y: 20 } })
+effect.init()
 
 const animate = (): void => {
   effect.update()
