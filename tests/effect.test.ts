@@ -1,6 +1,5 @@
-import { Point } from "../src/components/point"
 import { Effect } from "../src/components/effect"
-import { beforeAll, describe, expect, test, vi } from "vitest"
+import { beforeAll, describe, expect, test } from "vitest"
 
 describe("effect", () => {
   beforeAll(() => {
@@ -42,7 +41,7 @@ describe("effect", () => {
       expect(effect.ctx).toBeInstanceOf(CanvasRenderingContext2D)
       expect(effect.particles).toEqual([])
       expect(effect.debug).toEqual(false)
-      expect(effect.zoom).toEqual(new Point(20, 20))
+      expect(effect.zoom).toEqual(50)
       expect(effect.pointer).toBeNull()
     })
 
